@@ -11,19 +11,18 @@
 #include <QImage>
 #include <QPixmap>
 #include <QRgb>
+#include <QPoint>
 
-#include "ui_widget.h"
+// TODO make pretty someday
 
-typedef void (*test_callback)(void);
+#include "ui_ColorSelectWidget.h"
 
-class Widget : public QWidget {
+class ColorSelectWidget : public QWidget {
 	Q_OBJECT
 
 public:
-	Widget(QWidget *parent = nullptr);
-	~Widget();
-
-	void test(test_callback func);
+	ColorSelectWidget(QWidget *parent = nullptr);
+	~ColorSelectWidget();
 
 signals:
 	void closed();
@@ -35,6 +34,11 @@ private:
 	void mouseMoveEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
+
+private:
+	QRgb ProcessPixel(int x, int y);
+	bool ProcessOutsideRegion(int &aPtr, int &bPtr, bool left, int a, int b,
+				  int x, int y, int z);
 
 protected:
 	void paintColorPicker(QPainter *painter);
@@ -67,6 +71,10 @@ private:
 
 	int _pos_x;
 	int _pos_y;
+
+	int _outside_pos_x;
+	int _outside_pos_y;
+
 	bool leftMouseDown;
 
 private:

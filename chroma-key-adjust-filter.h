@@ -2,7 +2,8 @@
 
 #include <obs-module.h>
 #include <graphics/graphics.h>
-#include "forms/widget.h"
+
+#include "forms/ColorSelectWidget.h"
 
 #define OBS_PLUGIN "chroma-key-adjust-filter"
 #define OBS_PLUGIN_ "chroma_key_adjust_filter"

@@ -1,5 +1,6 @@
 #include "chroma-key-adjust-filter.h"
-#include "forms/widget.h"
+
+#include "forms/ColorSelectWidget.h"
 
 #ifdef DEBUG
 #include <string>
@@ -13,7 +14,7 @@
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(OBS_PLUGIN, OBS_PLUGIN_LANG)
 
-Widget *_widget = nullptr;
+ColorSelectWidget *_widget = nullptr;
 bool _widget_bound = false;
 bool _widget_visible = true;
 
@@ -36,17 +37,17 @@ static bool filter_btn_test(obs_properties_t *, obs_property_t *, void *data)
 {
 	auto filter = (struct filter *)data;
 	if (!_widget) {
-		_widget = new Widget();
+		_widget = new ColorSelectWidget();
 		_widget->setWindowTitle("Key Color");
 		_widget->setWindowFlags(Qt::WindowStaysOnTopHint);
-		QObject::connect(_widget, &Widget::closed, []() {
+		QObject::connect(_widget, &ColorSelectWidget::closed, []() {
 			_widget = nullptr;
 			_child = nullptr;
 		});
 
 		// connect color change
 		QObject::connect(
-			_widget, &Widget::colorChanged,
+			_widget, &ColorSelectWidget::colorChanged,
 			[=](const QColor &color) {
 				UpdateLinkedChromaKeyFilterColorSetting(color);
 			});

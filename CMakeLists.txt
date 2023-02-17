@@ -23,8 +23,8 @@ set(MACOS_INSTALLER_UUID "2039DC32-99BB-4871-B8E4-5B4E2EF349B7")
 set(PLUGIN_AUTHOR "mahgu")
 
 target_sources(${PROJECT_NAME} PRIVATE
-  forms/widget.h
-  forms/widget.cpp
+  forms/ColorSelectWidget.h
+  forms/ColorSelectWidget.cpp
   chroma-key-adjust-filter.h
   chroma-key-adjust-filter.cpp
 )
