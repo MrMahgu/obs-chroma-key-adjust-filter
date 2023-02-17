@@ -22,7 +22,7 @@ env:
 jobs:
   clang_check:
     name: 01 - Code Format Check
-    runs-on: [self-hosted, linux] # ubuntu-22.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,7 +42,7 @@ jobs:
       fail-fast: true
       matrix:
         arch: [x86_64, arm64, universal] # universal
-    if: ${{ false }} # always()
+    if: always() # ${{ false }} 
     needs: [clang_check]
     outputs:
       commitHash: ${{ steps.setup.outputs.commitHash }}
@@ -167,12 +167,12 @@ jobs:
 
   linux_build:
     name: 02 - Linux
-    runs-on: [self-hosted, linux] # ubuntu-22.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
       matrix:
         arch: [x86_64]
-    if: always()  # disable for now -- was -- always()
+    if: always()
     needs: [clang_check]
     outputs:
       commitHash: ${{ steps.setup.outputs.commitHash }}
@@ -245,12 +245,12 @@ jobs:
 
   windows_build:
     name: 02 - Windows
-    runs-on: [self-hosted, windows] # windows-2022
+    runs-on: windows-2022
     strategy:
       fail-fast: true
       matrix:
         arch: [x64]
-    if: always() # ${{ false }} # always()
+    if: always()
     needs: [clang_check]
     outputs:
       commitHash: ${{ steps.setup.outputs.commitHash }}
@@ -341,9 +341,9 @@ jobs:
 
   make-release:
     name: 03 - Create and upload release
-    runs-on: [self-hosted, linux] # ubuntu-22.04
+    runs-on: ubuntu-22.04
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    needs: [linux_build, windows_build] # macos_build linux_build windows_build 
+    needs: [macos_build, linux_build, windows_build] # macos_build linux_build windows_build 
     defaults:
       run:
         shell: bash
@@ -362,10 +362,7 @@ jobs:
           ## CHECKSUM GENERATION SCRIPT
           shopt -s extglob
           echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
-          for filex in ${{ github.workspace }}/**/@(*.deb|*.awesome); do
-            echo "    ${filex}"
-          done
-          for file in ${{ github.workspace }}/**/@(*.exe|obs*.deb|*.zip); do
+          for file in ${{ github.workspace }}/**/@(*.exe|obs*.deb|*.zip|obs*.pkg); do
             echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
           done
 
@@ -381,6 +378,6 @@ jobs:
           files: |
             ${{ github.workspace }}/**/*.zip
             ${{ github.workspace }}/**/*.exe
-            ${{ github.workspace }}/**/release/obs*.deb
-#            ${{ github.workspace }}/**/obs*.pkg
+            ${{ github.workspace }}/**/obs*.deb
+            ${{ github.workspace }}/**/obs*.pkg
 
