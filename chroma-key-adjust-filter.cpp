@@ -15,8 +15,10 @@ OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(OBS_PLUGIN, OBS_PLUGIN_LANG)
 
 ColorSelectWidget *_widget = nullptr;
+
 bool _widget_bound = false;
 bool _widget_visible = true;
+bool _handled_signal = false;
 
 obs_source_t *_child = nullptr;
 
@@ -33,13 +35,123 @@ void UpdateLinkedChromaKeyFilterColorSetting(QColor color)
 
 namespace ChromaKeyAdjust {
 
+static void update_child_source_pointer(obs_source_t *source)
+{
+	_child = source;
+}
+
+static void source_filter_removed(void *data, calldata_t *cd)
+{
+	obs_source_t *source = (obs_source_t *)calldata_ptr(cd, "filter");
+	obs_source_t *filter = (obs_source_t *)calldata_ptr(cd, "filter");
+	info("[FILTER WAS REMOVED]");
+	if (filter == _child) {
+		_child = nullptr;
+		info("[FILTER]");
+	} else if (source == _child) {
+		info("[SOURCE]");
+	} else {
+		info("[UNKNOWN]");
+	}
+}
+
 static bool filter_btn_test(obs_properties_t *, obs_property_t *, void *data)
 {
 	auto filter = (struct filter *)data;
 	if (!_widget) {
+
+		// Reset our child?
+		if (_child) {
+			_child = nullptr;
+		}
+
+		// Bind our chroma key source filter
+		obs_source_enum_filters(
+			obs_filter_get_parent(filter->context),
+			[](obs_source_t *parent, obs_source_t *child,
+			   void *param) {
+				UNUSED_PARAMETER(parent);
+				UNUSED_PARAMETER(param);
+
+				obs_data_t *_tmp_settings =
+					obs_source_get_settings(child);
+
+				const char *key_color = "key_color";
+				const char *key_color_type = "key_color_type";
+
+				if (strcmp(obs_source_get_id(child),
+					   "chroma_key_filter_v2") == 0) {
+
+					bool update_custom = false;
+
+					// check if we need to update it
+					// key, is set, make sure its set to "custom"
+					if (obs_data_has_default_value(
+						    _tmp_settings, key_color)) {
+						update_custom =
+							strcmp(obs_data_get_string(
+								       _tmp_settings,
+								       key_color),
+							       "custom") != 0;
+					} else {
+						update_custom = true;
+					}
+					if (update_custom) {
+						obs_data_set_string(
+							_tmp_settings,
+							key_color_type,
+							"custom");
+
+						obs_data_set_int(_tmp_settings,
+								 "key_color",
+								 Qt::green);
+
+						obs_source_update(
+							_child, _tmp_settings);
+
+						info("chroma key was forced into custom mode");
+					}
+					update_child_source_pointer(child);
+				}
+				obs_data_release(_tmp_settings);
+			},
+			nullptr);
+
+		if (_child) {
+			std::string filter_start("Chroma key filter found: ");
+			std::string filter_name(obs_source_get_name(_child));
+			std::string filter_final = filter_start + filter_name;
+			blog(LOG_INFO, filter_final.c_str());
+
+			// register some bad ass singals
+			signal_handler_t *handler =
+				obs_source_get_signal_handler(
+					obs_filter_get_parent(filter->context));
+
+			// disconnect any old stuff
+			if (_handled_signal && handler) {
+				signal_handler_disconnect(
+					handler, "filter_remove",
+					&source_filter_removed, filter);
+				_handled_signal = false;
+			}
+
+			if (handler) {
+				signal_handler_connect(handler, "filter_remove",
+						       &source_filter_removed,
+						       filter);
+				_handled_signal = true;
+			}
+
+		} else {
+			info("No Chroma key filter could be detected");
+			return false;
+		}
+
 		_widget = new ColorSelectWidget();
 		_widget->setWindowTitle("Key Color");
 		_widget->setWindowFlags(Qt::WindowStaysOnTopHint);
+
 		QObject::connect(_widget, &ColorSelectWidget::closed, []() {
 			_widget = nullptr;
 			_child = nullptr;
@@ -51,21 +163,6 @@ static bool filter_btn_test(obs_properties_t *, obs_property_t *, void *data)
 			[=](const QColor &color) {
 				UpdateLinkedChromaKeyFilterColorSetting(color);
 			});
-
-		// Bind our chroma key source filter
-		obs_source_enum_filters(
-			obs_filter_get_parent(filter->context),
-			[](obs_source_t *parent, obs_source_t *child,
-			   void *param) {
-				UNUSED_PARAMETER(parent);
-				UNUSED_PARAMETER(param);
-				//blog(LOG_INFO, obs_source_get_name(child));
-				if (strcmp("Chroma Key",
-					   obs_source_get_name(child)) == 0) {
-					_child = child;
-				}
-			},
-			nullptr);
 
 		// additional check
 		if (_widget) {
@@ -99,6 +196,18 @@ static obs_properties_t *filter_properties(void *data)
 static void filter_defaults(obs_data_t *settings)
 {
 	UNUSED_PARAMETER(settings);
+}
+
+static void filter_video_render(void *data, gs_effect_t *effect)
+{
+	UNUSED_PARAMETER(effect);
+
+	auto filter = (struct filter *)data;
+
+	if (!filter->context)
+		return;
+
+	obs_source_skip_video_filter(filter->context);
 }
 
 static void *filter_create(obs_data_t *settings, obs_source_t *source)

@@ -36,6 +36,7 @@ static void filter_defaults(obs_data_t *settings);
 
 static void *filter_create(obs_data_t *settings, obs_source_t *source);
 static void filter_destroy(void *data);
+static void filter_video_render(void *data, gs_effect_t *effect);
 
 struct filter {
 	obs_source_t *context;
@@ -50,10 +51,14 @@ struct obs_source_info create_filter_info()
 	filter_info.output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_SRGB;
 
 	filter_info.get_name = filter_get_name;
+
 	filter_info.get_properties = filter_properties;
 	filter_info.get_defaults = filter_defaults;
+
 	filter_info.create = filter_create;
 	filter_info.destroy = filter_destroy;
+
+	filter_info.video_render = filter_video_render;
 
 	return filter_info;
 };
