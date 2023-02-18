@@ -9,8 +9,8 @@
 #define OBS_PLUGIN_ "chroma_key_adjust_filter"
 #define OBS_PLUGIN_VERSION_MAJOR 0
 #define OBS_PLUGIN_VERSION_MINOR 0
-#define OBS_PLUGIN_VERSION_RELEASE 1
-#define OBS_PLUGIN_VERSION_STRING "0.0.1"
+#define OBS_PLUGIN_VERSION_RELEASE 2
+#define OBS_PLUGIN_VERSION_STRING "0.0.2"
 #define OBS_PLUGIN_LANG "en-US"
 
 #define OBS_UI_SETTING_FILTER_NAME "mahgu.chromakeyadjust.ui.filter_title"

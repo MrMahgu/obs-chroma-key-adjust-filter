@@ -9,7 +9,7 @@ else()
   set(OBS_FRONTEND OBS::obs-frontend-api)
 endif()
 
-project(obs-chroma-key-adjust-filter VERSION 0.0.1)
+project(obs-chroma-key-adjust-filter VERSION 0.0.2)
 
 add_library(${PROJECT_NAME} MODULE)
 
