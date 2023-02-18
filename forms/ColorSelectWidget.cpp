@@ -3,8 +3,7 @@
 
 // TODO make pretty someday
 
-ColorSelectWidget::ColorSelectWidget(QWidget *parent,
-				     QColor knownColor)
+ColorSelectWidget::ColorSelectWidget(QWidget *parent, QColor knownColor)
 	: QWidget(parent),
 	  ui(new Ui::ColorSelectWidget),
 	  selectedColor(Qt::green),
@@ -77,8 +76,8 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent,
 
 	QPoint tr = colorPickerFrame->geometry().topRight();
 
-	_pos_x = tr.x()-1;
-	_pos_y = tr.y()+1;
+	_pos_x = tr.x() - 1;
+	_pos_y = tr.y() + 1;
 
 	UpdateHexColorLineEdit();
 }
