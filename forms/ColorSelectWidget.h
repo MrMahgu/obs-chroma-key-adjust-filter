@@ -38,13 +38,16 @@ private:
 	void mouseReleaseEvent(QMouseEvent *event);
 
 private:
+	bool HandleQuickBoxMouseEvents(QPoint bounds, QPoint pos);
+
+private:
 	QRgb ProcessPixel(int x, int y);
 	bool ProcessOutsideRegion(int &aPtr, int &bPtr, bool left, int a, int b,
 				  int x, int y, int z);
 
 private:
-	bool CheckColorBoxesForMouseEvent(QRect rect, QPoint containerPoint,
-					  QPoint position, QColor color);
+	bool CheckQuickBoxForMouseEvent(QRect rect, QPoint containerPoint,
+					QPoint position, QColor color);
 	void UpdateHexColorLineEdit();
 
 protected:

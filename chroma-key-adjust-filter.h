@@ -26,6 +26,18 @@
 bool obs_module_load(void);
 void obs_module_unload();
 
+namespace ColorUtil {
+static inline QColor color_from_int(long long val);
+static inline long long color_to_int(QColor color);
+} // namespace ColorUtil
+
+namespace Widget {
+
+static void update_child_pointer(obs_source_t *source);
+static void reset_child_pointer();
+
+} // namespace Widget
+
 namespace ChromaKeyAdjust {
 
 void report_version();

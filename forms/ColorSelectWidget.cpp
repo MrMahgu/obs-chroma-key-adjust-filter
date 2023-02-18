@@ -91,6 +91,28 @@ void ColorSelectWidget::resizeEvent(QResizeEvent *event)
 	// do nothing
 }
 
+bool ColorSelectWidget::HandleQuickBoxMouseEvents(QPoint bounds, QPoint pos)
+{
+	if (CheckQuickBoxForMouseEvent(colorRedFrameRect, bounds, pos, Qt::red))
+		return true;
+	else if (CheckQuickBoxForMouseEvent(colorMagentaFrameRect, bounds, pos,
+					    Qt::magenta))
+		return true;
+	else if (CheckQuickBoxForMouseEvent(colorBlueFrameRect, bounds, pos,
+					    Qt::blue))
+		return true;
+	else if (CheckQuickBoxForMouseEvent(colorCyanFrameRect, bounds, pos,
+					    Qt::cyan))
+		return true;
+	else if (CheckQuickBoxForMouseEvent(colorGreenFrameRect, bounds, pos,
+					    Qt::green))
+		return true;
+	else if (CheckQuickBoxForMouseEvent(colorYellowFrameRect, bounds, pos,
+					    Qt::yellow))
+		return true;
+	return false;
+}
+
 void ColorSelectWidget::mousePressEvent(QMouseEvent *event)
 {
 	if (event->type() != QEvent::MouseButtonPress)
@@ -102,29 +124,10 @@ void ColorSelectWidget::mousePressEvent(QMouseEvent *event)
 	QPoint pos = event->pos();
 	QPoint bounds = pc->topRight();
 
-	// Check the color boxes first -- if we clicked any, we just return out
-	if (CheckColorBoxesForMouseEvent(colorRedFrameRect, bounds, pos,
-					 Qt::red))
-		return;
-	else if (CheckColorBoxesForMouseEvent(colorMagentaFrameRect, bounds,
-					      pos, Qt::magenta))
-		return;
-	else if (CheckColorBoxesForMouseEvent(colorBlueFrameRect, bounds, pos,
-					      Qt::blue))
-		return;
-	else if (CheckColorBoxesForMouseEvent(colorCyanFrameRect, bounds, pos,
-					      Qt::cyan))
-		return;
-	else if (CheckColorBoxesForMouseEvent(colorGreenFrameRect, bounds, pos,
-					      Qt::green))
-		return;
-	else if (CheckColorBoxesForMouseEvent(colorYellowFrameRect, bounds, pos,
-					      Qt::yellow))
+	if (HandleQuickBoxMouseEvents(bounds, pos))
 		return;
 
 	leftMouseDown = true;
-
-	// actualColor
 
 	if (pc->contains(pos)) {
 		insideColorPicker = true;
@@ -288,10 +291,10 @@ bool ColorSelectWidget::ProcessOutsideRegion(int &aPtr, int &bPtr, bool left,
 	return false;
 }
 
-bool ColorSelectWidget::CheckColorBoxesForMouseEvent(QRect rect,
-						     QPoint containerPoint,
-						     QPoint position,
-						     QColor color)
+bool ColorSelectWidget::CheckQuickBoxForMouseEvent(QRect rect,
+						   QPoint containerPoint,
+						   QPoint position,
+						   QColor color)
 {
 	if (rect.contains(position)) {
 		_pos_x = containerPoint.x() - 1;
