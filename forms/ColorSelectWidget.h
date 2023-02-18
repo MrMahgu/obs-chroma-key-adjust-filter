@@ -12,6 +12,7 @@
 #include <QPixmap>
 #include <QRgb>
 #include <QPoint>
+#include <QLineEdit>
 
 // TODO make pretty someday
 
@@ -40,6 +41,11 @@ private:
 	bool ProcessOutsideRegion(int &aPtr, int &bPtr, bool left, int a, int b,
 				  int x, int y, int z);
 
+private:
+	bool CheckColorBoxesForMouseEvent(QRect rect, QPoint containerPoint,
+					  QPoint position, QColor color);
+	void UpdateHexColorLineEdit();
+
 protected:
 	void paintColorPicker(QPainter *painter);
 	void paintBaseColorPicker(QPainter *painter);
@@ -49,6 +55,8 @@ protected:
 
 	void paintColorNotification(QPainter *painter);
 	void paintBaseColorNotification(QPainter *painter);
+
+	void paintColorBoxes(QPainter *painter);
 
 protected:
 	void closeEvent(QCloseEvent *event);
@@ -69,13 +77,25 @@ private:
 	QFrame *selectedColorFrame;
 	QFrame *mouseColorFrame;
 
-	int _pos_x;
-	int _pos_y;
+	// Color boxes
+	QFrame *colorRedFrame;
+	QFrame *colorMagentaFrame;
+	QFrame *colorBlueFrame;
+	QFrame *colorCyanFrame;
+	QFrame *colorGreenFrame;
+	QFrame *colorYellowFrame;
 
-	int _outside_pos_x;
-	int _outside_pos_y;
+	QLineEdit *lineEdit_hexColor;
+
+	int _pos_x; // lol inside color picker x
+	int _pos_y; // " y
+
+	int _outside_pos_x; // outside x temp var
+	int _outside_pos_y; // ouside y temp var
 
 	bool leftMouseDown;
+	bool insideColorPicker;
+	bool insideBaseColorPicker;
 
 private:
 	QRect colorPickerFrameRect;
@@ -83,4 +103,11 @@ private:
 
 	QRect selectedColorFrameRect;
 	QRect mouseColorFrameRect;
+
+	QRect colorRedFrameRect;
+	QRect colorMagentaFrameRect;
+	QRect colorBlueFrameRect;
+	QRect colorCyanFrameRect;
+	QRect colorGreenFrameRect;
+	QRect colorYellowFrameRect;
 };

@@ -23,8 +23,11 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent)
 	// Setup tracking on this widget
 	this->setMouseTracking(true);
 
+	// Grab lineEdit
+	lineEdit_hexColor = this->findChild<QLineEdit *>("lineEdit_hexColor");
+
 	// Grab QFrames
-	colorPickerFrame = this->findChild<QFrame *>("colorPickerFrame"),
+	colorPickerFrame = this->findChild<QFrame *>("colorPickerFrame");
 	baseColorPickerFrame =
 		this->findChild<QFrame *>("baseColorPickerFrame");
 	selectedColorFrame = this->findChild<QFrame *>("selectedColorFrame");
@@ -38,6 +41,30 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent)
 	colorPickerFrame->setMouseTracking(true);
 	baseColorPickerFrame->setMouseTracking(true);
 	selectedColorFrame->setMouseTracking(true);
+
+	// Color boxes QFrames
+	colorRedFrame = this->findChild<QFrame *>("colorRedFrame");
+	colorMagentaFrame = this->findChild<QFrame *>("colorMegentaFrame");
+	colorBlueFrame = this->findChild<QFrame *>("colorBlueFrame");
+	colorCyanFrame = this->findChild<QFrame *>("colorCyanFrame");
+	colorGreenFrame = this->findChild<QFrame *>("colorGreenFrame");
+	colorYellowFrame = this->findChild<QFrame *>("colorYellowFrame");
+
+	// Color boxes QFrame rects
+	colorRedFrameRect = colorRedFrame->geometry();
+	colorMagentaFrameRect = colorMagentaFrame->geometry();
+	colorBlueFrameRect = colorBlueFrame->geometry();
+	colorCyanFrameRect = colorCyanFrame->geometry();
+	colorGreenFrameRect = colorGreenFrame->geometry();
+	colorYellowFrameRect = colorYellowFrame->geometry();
+
+	// Color boxes mouse support
+	colorRedFrame->setMouseTracking(true);
+	colorMagentaFrame->setMouseTracking(true);
+	colorBlueFrame->setMouseTracking(true);
+	colorCyanFrame->setMouseTracking(true);
+	colorGreenFrame->setMouseTracking(true);
+	colorYellowFrame->setMouseTracking(true);
 }
 
 ColorSelectWidget::~ColorSelectWidget()
@@ -58,32 +85,64 @@ void ColorSelectWidget::mousePressEvent(QMouseEvent *event)
 	if (event->button() != Qt::LeftButton)
 		return;
 
-	leftMouseDown = true;
+	QRect *pc = &colorPickerFrameRect;
 	QPoint pos = event->pos();
+	QPoint bounds = pc->topRight();
+
+	// Check the color boxes first -- if we clicked any, we just return out
+	if (CheckColorBoxesForMouseEvent(colorRedFrameRect, bounds, pos,
+					 Qt::red))
+		return;
+	else if (CheckColorBoxesForMouseEvent(colorMagentaFrameRect, bounds,
+					      pos, Qt::magenta))
+		return;
+	else if (CheckColorBoxesForMouseEvent(colorBlueFrameRect, bounds, pos,
+					      Qt::blue))
+		return;
+	else if (CheckColorBoxesForMouseEvent(colorCyanFrameRect, bounds, pos,
+					      Qt::cyan))
+		return;
+	else if (CheckColorBoxesForMouseEvent(colorGreenFrameRect, bounds, pos,
+					      Qt::green))
+		return;
+	else if (CheckColorBoxesForMouseEvent(colorYellowFrameRect, bounds, pos,
+					      Qt::yellow))
+		return;
+
+	leftMouseDown = true;
 
 	// actualColor
-	QRect *pc = &colorPickerFrameRect;
-	if (pc->contains(event->pos())) {
+
+	if (pc->contains(pos)) {
+		insideColorPicker = true;
 		_pos_x = pos.x();
 		_pos_y = pos.y();
 		QRgb pixel = ProcessPixel(_pos_x, _pos_y);
 		if (leftMouseDown) {
 			emit colorChanged(QColor(pixel));
 			this->selectedColor = QColor(pixel);
+			UpdateHexColorLineEdit();
 			this->update();
 		}
 		return;
+	} else {
+		insideColorPicker = false;
 	}
 
 	// baseColor
 	QRect *sc = &baseColorPickerFrameRect;
-	if (sc->contains(event->pos())) {
+	if (sc->contains(pos)) {
+		insideBaseColorPicker = true;
 		QRgb pixel = ProcessPixel(pos.x(), pos.y());
-		emit colorChanged(QColor(pixel));
-		this->selectedColor = QColor(pixel);
 		this->baseColor = QColor(pixel);
+		this->selectedColor = QColor(pixel);
+		_pos_x = pc->topRight().x() - 1;
+		_pos_y = pc->topRight().y() + 1;
+		UpdateHexColorLineEdit();
 		this->update();
 		return;
+	} else {
+		insideBaseColorPicker = false;
 	}
 }
 
@@ -94,6 +153,8 @@ void ColorSelectWidget::mouseReleaseEvent(QMouseEvent *event)
 	if (event->button() != Qt::LeftButton)
 		return;
 	leftMouseDown = false;
+	insideColorPicker = false;
+	insideBaseColorPicker = false;
 }
 
 QRgb ColorSelectWidget::ProcessPixel(int x, int y)
@@ -104,33 +165,14 @@ QRgb ColorSelectWidget::ProcessPixel(int x, int y)
 	return pixel;
 }
 
-bool ColorSelectWidget::ProcessOutsideRegion(int &aPtr, int &bPtr, bool left,
-					     int a, int b, int x, int y, int z)
-{
-	bool res = left ? a < x : a > x;
-	if (res) {
-		aPtr = x;
-		if (b < bPtr && b > y) {
-			bPtr = b;
-		} else if (b < bPtr && b < y) {
-			bPtr = y;
-		} else if (b > bPtr && b < z) {
-			bPtr = b;
-		} else if (b > bPtr && b > z) {
-			bPtr = z;
-		}
-		return true;
-	}
-	return false;
-}
-
 void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 {
+
 	QRect *pc = &colorPickerFrameRect;
 	QPoint pos = event->pos();
 
 	// Primary
-	if (pc->contains(event->pos())) {
+	if (insideColorPicker && pc->contains(event->pos())) {
 
 		QRgb pixel = ProcessPixel(pos.x(), pos.y());
 		this->currentMouseColor = QColor(pixel);
@@ -139,6 +181,7 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 			_pos_x = pos.x();
 			_pos_y = pos.y();
 			this->selectedColor = this->currentMouseColor;
+			UpdateHexColorLineEdit();
 		}
 		this->update();
 		return;
@@ -146,12 +189,13 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 
 	// baseColor
 	QRect *sc = &baseColorPickerFrameRect;
-	if (sc->contains(event->pos())) {
+	if (insideBaseColorPicker && sc->contains(event->pos())) {
 		QRgb pixel = ProcessPixel(pos.x(), pos.y());
 		if (leftMouseDown) {
 			emit colorChanged(QColor(pixel));
 			this->baseColor = QColor(pixel);
 			this->selectedColor = QColor(pixel);
+			UpdateHexColorLineEdit();
 			this->update();
 		}
 		return;
@@ -163,6 +207,8 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 	// This allows you to capture the colours in the corners/sides/etc
 
 	if (!leftMouseDown)
+		return;
+	if (!insideColorPicker)
 		return;
 
 	_outside_pos_x = pos.x();
@@ -176,8 +222,6 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 	bool updated = false;
 	int _margin = 1;
 
-	// Process ouside the region of the quad
-	
 	// Left
 	if (!updated)
 		updated = ProcessOutsideRegion(
@@ -208,6 +252,49 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 		this->update();
 	}
+}
+
+bool ColorSelectWidget::ProcessOutsideRegion(int &aPtr, int &bPtr, bool left,
+					     int a, int b, int x, int y, int z)
+{
+	bool res = left ? a < x : a > x;
+	if (res) {
+		aPtr = x;
+		if (b < bPtr && b > y) {
+			bPtr = b;
+		} else if (b < bPtr && b < y) {
+			bPtr = y;
+		} else if (b > bPtr && b < z) {
+			bPtr = b;
+		} else if (b > bPtr && b > z) {
+			bPtr = z;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool ColorSelectWidget::CheckColorBoxesForMouseEvent(QRect rect,
+						     QPoint containerPoint,
+						     QPoint position,
+						     QColor color)
+{
+	if (rect.contains(position)) {
+		_pos_x = containerPoint.x() - 1;
+		_pos_y = containerPoint.y() + 1;
+		this->baseColor = color;
+		this->selectedColor = color;
+		emit colorChanged(this->selectedColor);
+		UpdateHexColorLineEdit();
+		this->update();
+		return true;
+	}
+	return false;
+}
+
+void ColorSelectWidget::UpdateHexColorLineEdit()
+{
+	lineEdit_hexColor->setText(selectedColor.name().toUpper());
 }
 
 void ColorSelectWidget::paintColorPicker(QPainter *painter)
@@ -278,9 +365,19 @@ void ColorSelectWidget::paintColorNotification(QPainter *painter)
 	painter->drawPoint(_pos_x, _pos_y + w);
 }
 
-void ColorSelectWidget::paintBaseColorNotification(QPainter *painter)
+void ColorSelectWidget::paintColorBoxes(QPainter *painter)
 {
-	Q_UNUSED(painter);
+	painter->fillRect(colorRedFrameRect, QBrush(Qt::red, Qt::SolidPattern));
+	painter->fillRect(colorMagentaFrameRect,
+			  QBrush(Qt::magenta, Qt::SolidPattern));
+	painter->fillRect(colorBlueFrameRect,
+			  QBrush(Qt::blue, Qt::SolidPattern));
+	painter->fillRect(colorCyanFrameRect,
+			  QBrush(Qt::cyan, Qt::SolidPattern));
+	painter->fillRect(colorGreenFrameRect,
+			  QBrush(Qt::green, Qt::SolidPattern));
+	painter->fillRect(colorYellowFrameRect,
+			  QBrush(Qt::yellow, Qt::SolidPattern));
 }
 
 void ColorSelectWidget::closeEvent(QCloseEvent *event)
@@ -295,11 +392,10 @@ void ColorSelectWidget::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 
+	paintColorBoxes(&painter);
 	paintColorPicker(&painter);
 	paintBaseColorPicker(&painter);
-
 	paintBaseColor(&painter);
 	paintMouseColor(&painter);
-
 	paintColorNotification(&painter);
 }
