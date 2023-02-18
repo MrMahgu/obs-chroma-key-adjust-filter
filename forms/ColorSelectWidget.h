@@ -11,19 +11,20 @@
 #include <QImage>
 #include <QPixmap>
 #include <QRgb>
+#include <QPoint>
+#include <QLineEdit>
 
-#include "ui_widget.h"
+// TODO make pretty someday
 
-typedef void (*test_callback)(void);
+#include "ui_ColorSelectWidget.h"
 
-class Widget : public QWidget {
+class ColorSelectWidget : public QWidget {
 	Q_OBJECT
 
 public:
-	Widget(QWidget *parent = nullptr);
-	~Widget();
-
-	void test(test_callback func);
+	ColorSelectWidget(QWidget *parent = nullptr,
+			  QColor knownColor = Qt::green);
+	~ColorSelectWidget();
 
 signals:
 	void closed();
@@ -36,6 +37,19 @@ private:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 
+private:
+	bool HandleQuickBoxMouseEvents(QPoint bounds, QPoint pos);
+
+private:
+	QRgb ProcessPixel(int x, int y);
+	bool ProcessOutsideRegion(int &aPtr, int &bPtr, bool left, int a, int b,
+				  int x, int y, int z);
+
+private:
+	bool CheckQuickBoxForMouseEvent(QRect rect, QPoint containerPoint,
+					QPoint position, QColor color);
+	void UpdateHexColorLineEdit();
+
 protected:
 	void paintColorPicker(QPainter *painter);
 	void paintBaseColorPicker(QPainter *painter);
@@ -44,14 +58,16 @@ protected:
 	void paintMouseColor(QPainter *painter);
 
 	void paintColorNotification(QPainter *painter);
-	void paintBaseColorNotification(QPainter *painter);
+	//void paintBaseColorNotification(QPainter *painter);
+
+	void paintColorBoxes(QPainter *painter);
 
 protected:
 	void closeEvent(QCloseEvent *event);
 	void paintEvent(QPaintEvent *event);
 
 private:
-	Ui::Widget *ui;
+	Ui::ColorSelectWidget *ui;
 
 	QColor selectedColor;
 	QColor baseColor;
@@ -65,9 +81,22 @@ private:
 	QFrame *selectedColorFrame;
 	QFrame *mouseColorFrame;
 
+	// Color boxes
+	QFrame *colorRedFrame;
+	QFrame *colorMagentaFrame;
+	QFrame *colorBlueFrame;
+	QFrame *colorCyanFrame;
+	QFrame *colorGreenFrame;
+	QFrame *colorYellowFrame;
+
+	QLineEdit *lineEdit_hexColor;
+
 	int _pos_x;
 	int _pos_y;
+
 	bool leftMouseDown;
+	bool insideColorPicker;
+	bool insideBaseColorPicker;
 
 private:
 	QRect colorPickerFrameRect;
@@ -75,4 +104,11 @@ private:
 
 	QRect selectedColorFrameRect;
 	QRect mouseColorFrameRect;
+
+	QRect colorRedFrameRect;
+	QRect colorMagentaFrameRect;
+	QRect colorBlueFrameRect;
+	QRect colorCyanFrameRect;
+	QRect colorGreenFrameRect;
+	QRect colorYellowFrameRect;
 };
