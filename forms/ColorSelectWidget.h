@@ -22,7 +22,8 @@ class ColorSelectWidget : public QWidget {
 	Q_OBJECT
 
 public:
-	ColorSelectWidget(QWidget *parent = nullptr);
+	ColorSelectWidget(QWidget *parent = nullptr,
+			  QColor knownColor = Qt::green);
 	~ColorSelectWidget();
 
 signals:
@@ -54,7 +55,7 @@ protected:
 	void paintMouseColor(QPainter *painter);
 
 	void paintColorNotification(QPainter *painter);
-	void paintBaseColorNotification(QPainter *painter);
+	//void paintBaseColorNotification(QPainter *painter);
 
 	void paintColorBoxes(QPainter *painter);
 

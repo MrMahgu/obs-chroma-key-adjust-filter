@@ -3,7 +3,8 @@
 
 // TODO make pretty someday
 
-ColorSelectWidget::ColorSelectWidget(QWidget *parent)
+ColorSelectWidget::ColorSelectWidget(QWidget *parent,
+				     QColor knownColor)
 	: QWidget(parent),
 	  ui(new Ui::ColorSelectWidget),
 	  selectedColor(Qt::green),
@@ -12,11 +13,15 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent)
 	  currentBaseMouseColor(Qt::green),
 	  colorPickerFrame(nullptr),
 	  baseColorPickerFrame(nullptr),
+	  selectedColorFrame(nullptr),
+	  mouseColorFrame(nullptr),
 	  _pos_x(0),
 	  _pos_y(0),
 	  _outside_pos_x(0),
 	  _outside_pos_y(0),
-	  leftMouseDown(false)
+	  leftMouseDown(false),
+	  insideColorPicker(false),
+	  insideBaseColorPicker(false)
 {
 	ui->setupUi(this);
 
@@ -65,6 +70,17 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent)
 	colorCyanFrame->setMouseTracking(true);
 	colorGreenFrame->setMouseTracking(true);
 	colorYellowFrame->setMouseTracking(true);
+
+	// Process known color
+	baseColor = knownColor;
+	selectedColor = knownColor;
+
+	QPoint tr = colorPickerFrame->geometry().topRight();
+
+	_pos_x = tr.x()-1;
+	_pos_y = tr.y()+1;
+
+	UpdateHexColorLineEdit();
 }
 
 ColorSelectWidget::~ColorSelectWidget()
@@ -250,6 +266,7 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 		if (leftMouseDown) {
 			this->selectedColor = this->currentMouseColor;
 		}
+		UpdateHexColorLineEdit();
 		this->update();
 	}
 }
