@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Widget</class>
- <widget class="QWidget" name="Widget">
+ <class>ColorSelectWidget</class>
+ <widget class="QWidget" name="ColorSelectWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>240</width>
-    <height>351</height>
+    <width>301</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,11 +16,17 @@
   <widget class="QFrame" name="colorPickerFrame">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>201</width>
-     <height>201</height>
+     <x>100</x>
+     <y>10</y>
+     <width>191</width>
+     <height>211</height>
     </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>ArrowCursor</cursorShape>
+   </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -32,10 +38,10 @@
   <widget class="QFrame" name="baseColorPickerFrame">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>240</y>
-     <width>161</width>
-     <height>30</height>
+     <x>10</x>
+     <y>230</y>
+     <width>281</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -48,10 +54,10 @@
   <widget class="QFrame" name="selectedColorFrame">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>240</y>
-     <width>31</width>
-     <height>31</height>
+     <x>10</x>
+     <y>10</y>
+     <width>81</width>
+     <height>171</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -59,6 +65,28 @@
    </property>
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>190</y>
+     <width>81</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>#FFCC55</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

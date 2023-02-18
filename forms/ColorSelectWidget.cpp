@@ -5,7 +5,7 @@
 
 ColorSelectWidget::ColorSelectWidget(QWidget *parent)
 	: QWidget(parent),
-	  ui(new Ui::Widget),
+	  ui(new Ui::ColorSelectWidget),
 	  selectedColor(Qt::green),
 	  baseColor(Qt::green),
 	  currentMouseColor(Qt::green),

@@ -55,7 +55,7 @@ protected:
 	void paintEvent(QPaintEvent *event);
 
 private:
-	Ui::Widget *ui;
+	Ui::ColorSelectWidget *ui;
 
 	QColor selectedColor;
 	QColor baseColor;
