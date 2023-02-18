@@ -72,6 +72,8 @@ namespace ChromaKeyAdjust {
 
 static void source_filter_removed(void *data, calldata_t *cd)
 {
+	UNUSED_PARAMETER(data);
+
 	obs_source_t *filter = (obs_source_t *)calldata_ptr(cd, "filter");
 
 	if (filter == Widget::_child)
