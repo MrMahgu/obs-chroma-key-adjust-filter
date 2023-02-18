@@ -88,11 +88,8 @@ private:
 
 	QLineEdit *lineEdit_hexColor;
 
-	int _pos_x; // lol inside color picker x
-	int _pos_y; // " y
-
-	int _outside_pos_x; // outside x temp var
-	int _outside_pos_y; // ouside y temp var
+	int _pos_x;
+	int _pos_y;
 
 	bool leftMouseDown;
 	bool insideColorPicker;

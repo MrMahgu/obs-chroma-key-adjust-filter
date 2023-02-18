@@ -16,8 +16,6 @@ ColorSelectWidget::ColorSelectWidget(QWidget *parent, QColor knownColor)
 	  mouseColorFrame(nullptr),
 	  _pos_x(0),
 	  _pos_y(0),
-	  _outside_pos_x(0),
-	  _outside_pos_y(0),
 	  leftMouseDown(false),
 	  insideColorPicker(false),
 	  insideBaseColorPicker(false)
@@ -226,8 +224,8 @@ void ColorSelectWidget::mouseMoveEvent(QMouseEvent *event)
 	if (!insideColorPicker)
 		return;
 
-	_outside_pos_x = pos.x();
-	_outside_pos_y = pos.y();
+	int _outside_pos_x = pos.x();
+	int _outside_pos_y = pos.y();
 
 	QPoint tl = pc->topLeft();
 	QPoint bl = pc->bottomLeft();
