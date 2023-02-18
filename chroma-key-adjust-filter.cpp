@@ -93,9 +93,6 @@ static void filter_source_enum_callback(obs_source_t *parent,
 
 	if (strcmp(obs_source_get_id(child), "chroma_key_filter_v2") == 0) {
 
-		bool update_custom = false;
-		bool leave_color = false;
-
 		// check if we need to update it
 		// key, is set, make sure its set to "custom"
 		if (obs_data_has_default_value(_tmp_settings, key_color)) {
@@ -124,6 +121,7 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 				      void *data)
 {
 	auto filter = (struct filter *)data;
+
 	if (!Widget::_widget) {
 
 		uint32_t _known_color =
@@ -180,6 +178,7 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 		Widget::_widget->setWindowTitle("Key Color");
 		Widget::_widget->setWindowFlags(Qt::WindowStaysOnTopHint);
 
+		// Connect to closed event to reset our widget
 		QObject::connect(Widget::_widget, &ColorSelectWidget::closed,
 				 []() {
 					 Widget::_widget = nullptr;
