@@ -96,6 +96,7 @@ static bool filter_btn_test(obs_properties_t *, obs_property_t *, void *data)
 					bool update_custom = false;
 					bool leave_color = false;
 
+
 					// check if we need to update it
 					// key, is set, make sure its set to "custom"
 					if (obs_data_has_default_value(
