@@ -102,8 +102,6 @@ static bool filter_btn_test(obs_properties_t *, obs_property_t *, void *data)
 					if (obs_data_has_default_value(
 						    _tmp_settings, key_color)) {
 
-
-
 						if (strcmp(obs_data_get_string(
 								   _tmp_settings,
 								   key_color_type),
