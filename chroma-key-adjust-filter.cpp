@@ -9,6 +9,19 @@
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(OBS_PLUGIN, OBS_PLUGIN_LANG)
 
+/* clang-format off */
+
+#define OBS_CHROMA_KEY_FILTER_ID       "chroma_key_filter_v2"
+
+#define SETTING_COLOR_TYPE             "key_color_type"
+#define SETTING_KEY_COLOR              "key_color"
+
+#define SOURCE_TYPE_FILTER             "filter"
+
+#define SIGNAL_FILTER_REMOVE           "filter_remove"
+
+/* clang-format on */
+
 namespace Widget {
 
 ColorSelectWidget *_widget = nullptr;
@@ -57,7 +70,7 @@ void UpdateLinkedChromaKeyFilterColorSetting(QColor color)
 		return;
 
 	obs_data_t *_filter_settings = obs_source_get_settings(Widget::_child);
-	obs_data_set_int(_filter_settings, "key_color",
+	obs_data_set_int(_filter_settings, SETTING_KEY_COLOR,
 			 ColorUtil::color_to_int(color));
 	obs_source_update(Widget::_child, _filter_settings);
 	obs_data_release(_filter_settings);
@@ -69,7 +82,8 @@ static void source_filter_removed(void *data, calldata_t *cd)
 {
 	UNUSED_PARAMETER(data);
 
-	obs_source_t *filter = (obs_source_t *)calldata_ptr(cd, "filter");
+	obs_source_t *filter =
+		(obs_source_t *)calldata_ptr(cd, SOURCE_TYPE_FILTER);
 
 	if (filter == Widget::_child)
 		Widget::reset_child_pointer();
@@ -83,23 +97,22 @@ static void filter_source_enum_callback(obs_source_t *parent,
 
 	obs_data_t *_tmp_settings = obs_source_get_settings(child);
 
-	const char *key_color = "key_color";
-	const char *key_color_type = "key_color_type";
+	if (strcmp(obs_source_get_id(child), OBS_CHROMA_KEY_FILTER_ID) == 0) {
 
-	if (strcmp(obs_source_get_id(child), "chroma_key_filter_v2") == 0) {
-
-		// check if we need to update it
-		// key, is set, make sure its set to "custom"
-		if (obs_data_has_default_value(_tmp_settings, key_color)) {
+		// Check if the setting is not custom, if so, force change it
+		if (obs_data_has_default_value(_tmp_settings,
+					       SETTING_KEY_COLOR)) {
 
 			if (strcmp(obs_data_get_string(_tmp_settings,
-						       key_color_type),
+						       SETTING_COLOR_TYPE),
 				   "custom") != 0) {
 
 				obs_data_set_string(_tmp_settings,
-						    key_color_type, "custom");
+						    SETTING_COLOR_TYPE,
+						    "custom");
 
-				obs_data_set_int(_tmp_settings, key_color,
+				obs_data_set_int(_tmp_settings,
+						 SETTING_KEY_COLOR,
 						 ColorUtil::color_to_int(
 							 QColor(Qt::green)));
 
@@ -140,14 +153,15 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 			// disconnect any old stuff
 			if (Widget::_handled_signal && handler) {
 				signal_handler_disconnect(
-					handler, "filter_remove",
+					handler, SIGNAL_FILTER_REMOVE,
 					&source_filter_removed, filter);
 				Widget::_handled_signal = false;
 			}
 
 			// Connect any new stuff
 			if (handler) {
-				signal_handler_connect(handler, "filter_remove",
+				signal_handler_connect(handler,
+						       SIGNAL_FILTER_REMOVE,
 						       &source_filter_removed,
 						       filter);
 				Widget::_handled_signal = true;
@@ -157,8 +171,8 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 			obs_data_t *_tmp_settings =
 				obs_source_get_settings(Widget::_child);
 
-			_known_color =
-				obs_data_get_int(_tmp_settings, "key_color");
+			_known_color = obs_data_get_int(_tmp_settings,
+							SETTING_KEY_COLOR);
 
 			obs_data_release(_tmp_settings);
 
@@ -170,6 +184,7 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 		QColor color = ColorUtil::color_from_int(_known_color);
 
 		Widget::_widget = new ColorSelectWidget(nullptr, color);
+		// TODO Convert to OBS Text (use OBS value already exists, see chroma-key-filter.c
 		Widget::_widget->setWindowTitle("Key Color");
 		Widget::_widget->setWindowFlags(Qt::WindowStaysOnTopHint);
 
@@ -261,7 +276,7 @@ static void filter_destroy(void *data)
 
 			if (handler) {
 				signal_handler_disconnect(
-					handler, "filter_remove",
+					handler, SIGNAL_FILTER_REMOVE,
 					&source_filter_removed, filter);
 			}
 		}
