@@ -24,7 +24,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE(OBS_PLUGIN, OBS_PLUGIN_LANG)
 
 namespace Widget {
 
-ColorSelectWidget *_widget = nullptr;
+std::unique_ptr<ColorSelectWidget> _widget;
 
 bool _widget_bound = false;
 bool _widget_visible = true;
@@ -183,21 +183,20 @@ static bool filter_button_open_widget(obs_properties_t *, obs_property_t *,
 
 		QColor color = ColorUtil::color_from_int(_known_color);
 
-		Widget::_widget = new ColorSelectWidget(nullptr, color);
-		// TODO Convert to OBS Text (use OBS value already exists, see chroma-key-filter.c
+		Widget::_widget.reset(new ColorSelectWidget(nullptr, color));
 		Widget::_widget->setWindowTitle("Key Color");
 		Widget::_widget->setWindowFlags(Qt::WindowStaysOnTopHint);
 
 		// Connect to closed event to reset our widget
-		QObject::connect(Widget::_widget, &ColorSelectWidget::closed,
-				 []() {
-					 Widget::_widget = nullptr;
+		QObject::connect(Widget::_widget.get(),
+				 &ColorSelectWidget::closed, []() {
+					 Widget::_widget.reset(nullptr);
 					 Widget::_child = nullptr;
 				 });
 
 		// connect color change
 		QObject::connect(
-			Widget::_widget, &ColorSelectWidget::colorChanged,
+			Widget::_widget.get(), &ColorSelectWidget::colorChanged,
 			[=](const QColor &color) {
 				UpdateLinkedChromaKeyFilterColorSetting(color);
 			});
@@ -269,17 +268,14 @@ static void filter_destroy(void *data)
 	if (filter) {
 
 		// Remove our signal (not sure if we need to do this)
-		if (Widget::_handled_signal) {
-			signal_handler_t *handler =
-				obs_source_get_signal_handler(
-					obs_filter_get_parent(filter->context));
-
-			if (handler) {
-				signal_handler_disconnect(
-					handler, SIGNAL_FILTER_REMOVE,
-					&source_filter_removed, filter);
-			}
+		if (Widget::_widget) {
+			Widget::_widget->close();
 		}
+
+		if (Widget::_widget) {
+			Widget::_widget.reset(nullptr);
+		}
+
 		bfree(filter);
 	}
 }
