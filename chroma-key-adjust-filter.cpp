@@ -1,10 +1,5 @@
 #include "chroma-key-adjust-filter.h"
-
 #include "forms/ColorSelectWidget.h"
-
-#ifdef DEBUG
-#include <string>
-#endif
 
 #include <QList>
 #include <QMainWindow>
