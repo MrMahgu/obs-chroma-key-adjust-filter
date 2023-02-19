@@ -32,12 +32,12 @@ bool _handled_signal = false;
 
 obs_source_t *_child = nullptr;
 
-static void update_child_pointer(obs_source_t *source)
+static inline void update_child_pointer(obs_source_t *source)
 {
 	Widget::_child = source;
 }
 
-static void reset_child_pointer()
+static inline void reset_child_pointer()
 {
 	Widget::_child = nullptr;
 }
@@ -64,7 +64,7 @@ static inline long long color_to_int(QColor color)
 
 } // namespace ColorUtil
 
-void UpdateLinkedChromaKeyFilterColorSetting(QColor color)
+static inline void UpdateLinkedChromaKeyFilterColorSetting(QColor color)
 {
 	if (!Widget::_child)
 		return;
@@ -89,39 +89,46 @@ static void source_filter_removed(void *data, calldata_t *cd)
 		Widget::reset_child_pointer();
 }
 
+// Makes sure linked filter chroma key settings are correct
+// Does *not* destory obs_data_t object
+static inline void filter_auto_configure_linked_filter(obs_data_t *settings)
+{
+
+	if (obs_data_has_default_value(settings, SETTING_KEY_COLOR)) {
+
+		if (strcmp(obs_data_get_string(settings,
+					       SETTING_COLOR_TYPE),
+			   "custom") != 0) {
+
+			obs_data_set_string(settings, SETTING_COLOR_TYPE,
+					    "custom");
+
+			obs_data_set_int(
+				settings, SETTING_KEY_COLOR,
+				ColorUtil::color_to_int(QColor(Qt::green)));
+
+			obs_source_update(Widget::_child, settings);
+		}
+	}
+}
+
 static void filter_source_enum_callback(obs_source_t *parent,
 					obs_source_t *child, void *param)
 {
 	UNUSED_PARAMETER(parent);
 	UNUSED_PARAMETER(param);
 
+	// obtain data
 	obs_data_t *_tmp_settings = obs_source_get_settings(child);
 
+	// Find our first chroma key
 	if (strcmp(obs_source_get_id(child), OBS_CHROMA_KEY_FILTER_ID) == 0) {
-
-		// Check if the setting is not custom, if so, force change it
-		if (obs_data_has_default_value(_tmp_settings,
-					       SETTING_KEY_COLOR)) {
-
-			if (strcmp(obs_data_get_string(_tmp_settings,
-						       SETTING_COLOR_TYPE),
-				   "custom") != 0) {
-
-				obs_data_set_string(_tmp_settings,
-						    SETTING_COLOR_TYPE,
-						    "custom");
-
-				obs_data_set_int(_tmp_settings,
-						 SETTING_KEY_COLOR,
-						 ColorUtil::color_to_int(
-							 QColor(Qt::green)));
-
-				obs_source_update(Widget::_child,
-						  _tmp_settings);
-			}
-		}
+		// Make sure its configured correct, if not, also configure it correctly
+		filter_auto_configure_linked_filter(_tmp_settings);
+		// update our pointer
 		Widget::update_child_pointer(child);
 	}
+	// reelease data
 	obs_data_release(_tmp_settings);
 }
 
@@ -281,7 +288,7 @@ static void filter_destroy(void *data)
 }
 
 // Writes a simple log entry to OBS
-void report_version()
+static inline void report_version()
 {
 #ifdef DEBUG
 	info("you can haz chroma-key-adjust tooz (Version: %s)",
