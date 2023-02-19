@@ -16,8 +16,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE(OBS_PLUGIN, OBS_PLUGIN_LANG)
 #define SETTING_COLOR_TYPE             "key_color_type"
 #define SETTING_KEY_COLOR              "key_color"
 
-#define SOURCE_TYPE_FILTER             "filter"
-
+#define SIGNAL_FILTER_TYPE             "filter"
 #define SIGNAL_FILTER_REMOVE           "filter_remove"
 
 /* clang-format on */
@@ -78,12 +77,14 @@ static inline void UpdateLinkedChromaKeyFilterColorSetting(QColor color)
 
 namespace ChromaKeyAdjust {
 
+// Callback for when a filter is removed from the same source our filter is attached to.
+// Our callback will remove any link we may have to that filter, if we're linked
 static void source_filter_removed(void *data, calldata_t *cd)
 {
 	UNUSED_PARAMETER(data);
 
 	obs_source_t *filter =
-		(obs_source_t *)calldata_ptr(cd, SOURCE_TYPE_FILTER);
+		(obs_source_t *)calldata_ptr(cd, SIGNAL_FILTER_TYPE);
 
 	if (filter == Widget::_child)
 		Widget::reset_child_pointer();
