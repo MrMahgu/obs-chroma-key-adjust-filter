@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <obs-module.h>
 #include <graphics/graphics.h>
 
