@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        arch: [x86_64, arm64, universal] # universal
+        arch: [x86_64, arm64] # universal
     if: always() # ${{ false }} 
     needs: [clang_check]
     outputs:
